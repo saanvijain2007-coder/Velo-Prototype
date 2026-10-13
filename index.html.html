@@ -1,0 +1,1577 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VELO – Predict. Prevent. Move </title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #000B3D;
+    --navy-mid: #001166;
+    --navy-light: #0a1a7a;
+    --glow: rgba(60, 100, 255, 0.35);
+    --glass: rgba(255,255,255,0.07);
+    --glass-border: rgba(255,255,255,0.13);
+    --glass-strong: rgba(255,255,255,0.12);
+    --white: #ffffff;
+    --off-white: rgba(255,255,255,0.85);
+    --muted: rgba(255,255,255,0.45);
+    --green: #00E396;
+    --yellow: #FFB800;
+    --red: #FF4757;
+    --blue-accent: #4F8EFF;
+    --card-radius: 18px;
+    --uber: #000000;
+    --ola: #2ECC40;
+    --rapido: #FF6B35;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    background: #0a0e1a;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .phone-frame {
+    width: 390px;
+    height: 844px;
+    background: var(--navy);
+    border-radius: 50px;
+    overflow: hidden;
+    position: relative;
+    box-shadow:
+      0 0 0 2px rgba(255,255,255,0.08),
+      0 0 80px rgba(60,100,255,0.3),
+      0 40px 120px rgba(0,0,0,0.8);
+  }
+
+  .notch {
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 126px; height: 34px;
+    background: #0a0e1a;
+    border-radius: 0 0 20px 20px;
+    z-index: 999;
+  }
+
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    background: var(--navy);
+  }
+  .screen.active { display: flex; }
+
+  @keyframes fadeInUp {
+    from { opacity:0; transform:translateY(24px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity:0; } to { opacity:1; }
+  }
+  @keyframes pulse-glow {
+    0%,100% { box-shadow: 0 0 20px var(--glow); }
+    50%      { box-shadow: 0 0 40px rgba(60,100,255,0.6), 0 0 80px rgba(60,100,255,0.2); }
+  }
+  @keyframes morph-line {
+    0%   { transform: scaleX(0.3) scaleY(1); opacity:0.4; }
+    50%  { transform: scaleX(1) scaleY(1.5); opacity:1; }
+    100% { transform: scaleX(0.3) scaleY(1); opacity:0.4; }
+  }
+  @keyframes pop {
+    0%   { transform:scale(0.6); opacity:0; }
+    70%  { transform:scale(1.08); }
+    100% { transform:scale(1); opacity:1; }
+  }
+  @keyframes car-move {
+    0%   { left: 60px; }
+    100% { left: 260px; }
+  }
+  @keyframes slide-in-right {
+    from { transform:translateX(100%); opacity:0; }
+    to   { transform:translateX(0); opacity:1; }
+  }
+  @keyframes float {
+    0%,100% { transform:translateY(0px); }
+    50%      { transform:translateY(-6px); }
+  }
+  @keyframes ping {
+    0%   { transform:scale(1); opacity:0.8; }
+    100% { transform:scale(2.5); opacity:0; }
+  }
+
+  .anim-fade-up { animation: fadeInUp 0.5s ease both; }
+  .anim-fade    { animation: fadeIn 0.4s ease both; }
+  .delay-1 { animation-delay:0.1s; }
+  .delay-2 { animation-delay:0.2s; }
+  .delay-3 { animation-delay:0.3s; }
+  .delay-4 { animation-delay:0.4s; }
+  .delay-5 { animation-delay:0.5s; }
+  .delay-6 { animation-delay:0.6s; }
+  .delay-7 { animation-delay:0.7s; }
+
+  .glass-card {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--card-radius);
+  }
+
+  .glass-btn {
+    background: var(--glass-strong);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 14px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .glass-btn:active { transform:scale(0.97); opacity:0.85; }
+  .glass-btn:hover { background:rgba(255,255,255,0.18); border-color:rgba(255,255,255,0.25); }
+
+  .primary-btn {
+    background: linear-gradient(135deg, #1a3aff, #4f8eff);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 8px 24px rgba(26,58,255,0.4);
+  }
+  .primary-btn:active { transform:scale(0.97); }
+  .primary-btn:hover { box-shadow: 0 12px 32px rgba(26,58,255,0.55); }
+
+  .status-bar {
+    padding: 48px 24px 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .status-time { font-family:'Syne',sans-serif; font-weight:700; font-size:16px; color:var(--white); }
+  .status-icons { display:flex; gap:6px; align-items:center; }
+  .status-icons span { font-size:12px; color:var(--white); }
+
+  .bottom-nav {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 88px;
+    background: rgba(0,11,61,0.95);
+    border-top: 1px solid var(--glass-border);
+    backdrop-filter: blur(30px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-around;
+    padding-top: 12px;
+    z-index: 100;
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    padding: 6px 18px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+  }
+  .nav-item:active { transform:scale(0.92); }
+  .nav-icon { font-size: 22px; transition: all 0.2s; }
+  .nav-label { font-size: 10px; font-weight:500; color: var(--muted); transition:all 0.2s; }
+  .nav-item.active .nav-label { color: var(--blue-accent); }
+  .nav-item.active .nav-icon { filter: drop-shadow(0 0 8px var(--blue-accent)); }
+  .nav-dot {
+    width: 4px; height: 4px;
+    background: var(--blue-accent);
+    border-radius: 50%;
+    margin-top: -2px;
+  }
+
+  /* SCREEN 1 — SPLASH */
+  #splash {
+    align-items: center;
+    justify-content: center;
+    background: var(--navy);
+    gap: 20px;
+  }
+  #splash::before {
+    content:'';
+    position:absolute;
+    width:300px; height:300px;
+    background: radial-gradient(circle, rgba(26,58,255,0.25) 0%, transparent 70%);
+    border-radius:50%;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+  .splash-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 64px;
+    letter-spacing: -2px;
+    color: var(--white);
+    position: relative;
+    z-index:1;
+    animation: fadeIn 1s ease 0.3s both;
+  }
+  .splash-logo span { color: var(--blue-accent); }
+  .splash-tag {
+    font-size: 14px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    position:relative; z-index:1;
+    animation: fadeIn 1s ease 0.6s both;
+    font-weight:300;
+  }
+  .splash-lines {
+    position:absolute;
+    bottom: 160px;
+    display:flex; gap:8px; align-items:center;
+    z-index:1;
+    animation: fadeIn 1s ease 0.9s both;
+  }
+  .splash-line {
+    height: 3px;
+    border-radius: 2px;
+    background: var(--blue-accent);
+  }
+  .splash-line:nth-child(1) { width:16px; animation: morph-line 1.8s ease-in-out infinite; }
+  .splash-line:nth-child(2) { width:40px; animation: morph-line 1.8s ease-in-out 0.3s infinite; }
+  .splash-line:nth-child(3) { width:16px; animation: morph-line 1.8s ease-in-out 0.6s infinite; }
+
+  /* SCREEN 2 — LOGIN */
+  #login {
+    padding: 0;
+    background: linear-gradient(170deg, #001166 0%, var(--navy) 50%);
+  }
+  .login-top {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 32px 20px;
+  }
+  .login-tagline {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--muted);
+    text-align:center;
+    font-weight:300;
+    animation: fadeInUp 0.6s ease 0.15s both;
+    line-height:1.5;
+  }
+  .login-glow-orb {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(79,142,255,0.3) 0%, transparent 70%);
+    border-radius:50%;
+    animation: float 4s ease-in-out infinite;
+    position:absolute;
+    top: 80px; right: -40px;
+  }
+  .login-bottom {
+    padding: 24px 28px 50px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .input-field {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    width:100%;
+    transition: border-color 0.2s;
+  }
+  .input-field::placeholder { color: var(--muted); }
+  .input-field:focus { border-color: var(--blue-accent); }
+  .divider-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0;
+  }
+  .divider-line { flex:1; height:1px; background:var(--glass-border); }
+  .divider-text { font-size:12px; color:var(--muted); font-weight:300; }
+  .social-row { display:flex; gap:10px; }
+  .social-btn {
+    flex:1; height:52px;
+    font-size:14px; font-weight:500;
+    letter-spacing:0.2px;
+  }
+
+  /* SCREEN 3 — HOME */
+  #home { overflow: hidden; }
+  .home-scroll {
+    flex:1;
+    overflow-y: auto;
+    padding: 0 20px 100px;
+    scrollbar-width:none;
+  }
+  .home-scroll::-webkit-scrollbar { display:none; }
+  .greeting-section { margin-bottom: 24px; }
+  .greeting-hi { font-size:13px; color:var(--muted); font-weight:300; letter-spacing:0.5px; }
+  .greeting-name { font-family:'Syne',sans-serif; font-weight:700; font-size:26px; color:var(--white); margin-top:2px; }
+  .greeting-sub { font-size:13px; color:var(--muted); margin-top:4px; font-weight:300; }
+
+  .section-label {
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:1.5px;
+    color:var(--muted);
+    text-transform:uppercase;
+    margin-bottom:12px;
+  }
+
+  .quick-routes {
+    display:flex;
+    gap:10px;
+    overflow-x:auto;
+    scrollbar-width:none;
+    margin-bottom:24px;
+    padding-bottom:4px;
+  }
+  .quick-routes::-webkit-scrollbar { display:none; }
+  .route-card {
+    flex-shrink:0;
+    padding:16px;
+    min-width:150px;
+    cursor:pointer;
+    transition: all 0.2s;
+  }
+  .route-card:active { transform:scale(0.96); }
+  .route-from { font-size:11px; color:var(--muted); font-weight:300; margin-bottom:2px; }
+  .route-to { font-family:'Syne',sans-serif; font-size:15px; font-weight:700; color:var(--white); margin-bottom:10px; }
+  .route-meta { display:flex; gap:10px; }
+  .route-pill {
+    font-size:11px; font-weight:500; padding:3px 8px;
+    border-radius:20px;
+    background:rgba(79,142,255,0.15);
+    color:var(--blue-accent);
+    border:1px solid rgba(79,142,255,0.2);
+  }
+
+  .commute-widget {
+    padding:20px;
+    margin-bottom:24px;
+    background: linear-gradient(135deg, rgba(26,58,255,0.2), rgba(0,11,61,0.4));
+    border:1px solid rgba(79,142,255,0.3);
+    border-radius:var(--card-radius);
+    cursor:pointer;
+    position:relative;
+    overflow:hidden;
+  }
+  .commute-widget::before {
+    content:'';
+    position:absolute;
+    top:-30px; right:-30px;
+    width:120px; height:120px;
+    background:radial-gradient(circle,rgba(79,142,255,0.2),transparent 70%);
+    border-radius:50%;
+  }
+  .commute-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+  .commute-label { font-size:11px; color:var(--blue-accent); letter-spacing:1px; font-weight:600; text-transform:uppercase; }
+  .commute-class { font-family:'Syne',sans-serif; font-size:17px; color:var(--white); font-weight:700; margin-top:4px; }
+  .traffic-dot {
+    width:10px; height:10px; border-radius:50%;
+    background:var(--green);
+    position:relative;
+  }
+  .traffic-dot::after {
+    content:''; position:absolute; inset:-3px;
+    border-radius:50%; background:var(--green);
+    opacity:0.3;
+    animation:ping 1.5s ease-in-out infinite;
+  }
+  .commute-leave { display:flex; align-items:baseline; gap:6px; margin-bottom:8px; }
+  .leave-in { font-size:13px; color:var(--muted); font-weight:300; }
+  .leave-time { font-family:'Syne',sans-serif; font-size:32px; color:var(--white); font-weight:800; line-height:1; }
+  .leave-min { font-size:15px; color:var(--muted); }
+  .traffic-bar { height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; }
+  .traffic-fill { height:100%; width:65%; background:linear-gradient(90deg,var(--green),var(--yellow)); border-radius:2px; }
+
+  .compare-btn {
+    width:100%;
+    height:60px;
+    font-size:17px;
+    font-weight:600;
+    letter-spacing:0.3px;
+    margin-bottom:24px;
+    border-radius:18px;
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  /* SCREEN 4 — COMPARE */
+  #compare { overflow:hidden; }
+  .map-area {
+    height:220px;
+    background: linear-gradient(160deg, #001166 0%, #000833 100%);
+    flex-shrink:0;
+    position:relative;
+    overflow:hidden;
+  }
+  .map-grid {
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(79,142,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(79,142,255,0.06) 1px, transparent 1px);
+    background-size:30px 30px;
+  }
+  .map-route-line {
+    position:absolute;
+    top:50%; left:10%; right:10%;
+    height:3px;
+    background:linear-gradient(90deg,var(--blue-accent),var(--green));
+    border-radius:2px;
+    transform:translateY(-50%);
+  }
+  .map-pin {
+    position:absolute;
+    width:12px; height:12px;
+    border-radius:50%;
+    top:50%; transform:translateY(-50%);
+  }
+  .map-pin.start { left:10%; background:var(--blue-accent); box-shadow:0 0 12px var(--blue-accent); }
+  .map-pin.end   { right:10%; background:var(--green); box-shadow:0 0 12px var(--green); }
+  .map-car {
+    position:absolute;
+    top:calc(50% - 14px);
+    font-size:22px;
+    animation: car-move 4s linear infinite;
+  }
+  .map-label {
+    position:absolute;
+    bottom:12px; left:50%;
+    transform:translateX(-50%);
+    font-size:11px; font-weight:600;
+    color:var(--blue-accent);
+    letter-spacing:1px;
+    background:rgba(0,11,61,0.8);
+    padding:4px 12px;
+    border-radius:20px;
+    border:1px solid rgba(79,142,255,0.2);
+  }
+  .map-top-bar {
+    position:absolute;
+    top:50px; left:16px; right:16px;
+    display:flex; gap:8px;
+  }
+  .map-search-box {
+    flex:1; padding:10px 14px;
+    background:rgba(0,11,61,0.85);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    font-size:13px;
+    color:var(--white);
+    backdrop-filter:blur(10px);
+  }
+
+  .compare-bottom {
+    flex:1;
+    overflow-y:auto;
+    padding:16px 20px 100px;
+    scrollbar-width:none;
+  }
+  .compare-bottom::-webkit-scrollbar { display:none; }
+
+  .filter-row {
+    display:flex;
+    gap:8px;
+    margin-bottom:16px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .filter-row::-webkit-scrollbar { display:none; }
+  .filter-chip {
+    flex-shrink:0;
+    padding:8px 16px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:500;
+    cursor:pointer;
+    border:1px solid var(--glass-border);
+    color:var(--muted);
+    background:var(--glass);
+    transition:all 0.2s;
+  }
+  .filter-chip.active {
+    background:rgba(79,142,255,0.2);
+    border-color:var(--blue-accent);
+    color:var(--blue-accent);
+  }
+  .filter-chip:active { transform:scale(0.95); }
+
+  .ride-card {
+    padding:16px;
+    margin-bottom:10px;
+    cursor:pointer;
+    transition: all 0.25s ease;
+    position:relative;
+    overflow:hidden;
+  }
+  .ride-card:active { transform:scale(0.98); }
+  .ride-card.best {
+    border-color:rgba(0,227,150,0.4);
+    background:linear-gradient(135deg,rgba(0,227,150,0.08),rgba(0,11,61,0.4));
+  }
+  .best-tag {
+    position:absolute; top:12px; right:12px;
+    background:linear-gradient(135deg,#00E396,#00b070);
+    color:#000;
+    font-size:10px; font-weight:700;
+    padding:3px 10px;
+    border-radius:20px;
+    letter-spacing:0.5px;
+    text-transform:uppercase;
+  }
+  .ride-row { display:flex; align-items:center; gap:12px; }
+  .ride-logo {
+    width:44px; height:44px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+    font-weight:700;
+    flex-shrink:0;
+    font-family:'Syne',sans-serif;
+  }
+  .logo-uber { background:#fff; color:#000; font-size:13px; }
+  .logo-ola  { background:#00b233; color:#fff; font-size:13px; }
+  .logo-rapido { background:#ff6b35; color:#fff; font-size:11px; }
+  .ride-info { flex:1; }
+  .ride-name { font-size:15px; font-weight:600; color:var(--white); margin-bottom:3px; }
+  .ride-sub  { font-size:12px; color:var(--muted); font-weight:300; }
+  .ride-right { text-align:right; }
+  .ride-price { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--white); }
+  .ride-eta   { font-size:12px; color:var(--muted); font-weight:300; margin-top:2px; }
+  .ride-rating { font-size:11px; color:var(--yellow); margin-top:2px; }
+
+  /* SCREEN 5 — RIDE DETAIL */
+  #ridedetail { overflow:hidden; }
+  .detail-map {
+    height:200px;
+    background:linear-gradient(160deg,#001166,#000833);
+    flex-shrink:0;
+    position:relative;
+    overflow:hidden;
+  }
+  .back-btn {
+    position:absolute;
+    top:52px; left:16px;
+    width:40px; height:40px;
+    background:rgba(0,11,61,0.8);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    font-size:18px; color:var(--white);
+    backdrop-filter:blur(10px);
+    z-index:10;
+  }
+  .detail-scroll {
+    flex:1; overflow-y:auto;
+    padding:20px 20px 100px;
+    scrollbar-width:none;
+  }
+  .detail-scroll::-webkit-scrollbar { display:none; }
+  .detail-header { display:flex; align-items:center; gap:14px; margin-bottom:20px; }
+  .detail-logo { width:52px; height:52px; border-radius:14px; display:flex;align-items:center;justify-content:center; font-family:'Syne',sans-serif; font-weight:800; font-size:14px; }
+  .detail-title { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; color:var(--white); }
+  .detail-sub   { font-size:13px; color:var(--muted); margin-top:2px; }
+  .detail-price { font-family:'Syne',sans-serif; font-size:36px; font-weight:800; color:var(--white); margin-left:auto; }
+
+  .info-grid {
+    display:grid; grid-template-columns:1fr 1fr;
+    gap:10px; margin-bottom:20px;
+  }
+  .info-tile {
+    padding:16px;
+    border-radius:14px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+  }
+  .info-tile-label { font-size:11px; color:var(--muted); font-weight:300; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.8px; }
+  .info-tile-val { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--white); }
+  .info-tile-unit { font-size:12px; color:var(--muted); }
+
+  .route-preview {
+    padding:16px; border-radius:14px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    margin-bottom:20px;
+  }
+  .route-stops { display:flex; flex-direction:column; gap:0; }
+  .route-stop { display:flex; align-items:center; gap:12px; padding:8px 0; }
+  .stop-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .stop-dot.origin { background:var(--blue-accent); }
+  .stop-dot.dest   { background:var(--green); }
+  .stop-line { width:2px; height:20px; background:var(--glass-border); margin:0 4px; }
+  .stop-name { font-size:14px; font-weight:500; color:var(--white); }
+  .stop-sub  { font-size:12px; color:var(--muted); }
+
+  /* SCREEN 6 — BOOKING */
+  #booking { overflow:hidden; }
+  .booking-scroll {
+    flex:1; overflow-y:auto;
+    padding:20px 20px 100px;
+    scrollbar-width:none;
+  }
+  .booking-scroll::-webkit-scrollbar { display:none; }
+
+  .location-card { padding:16px; border-radius:14px; background:var(--glass); border:1px solid var(--glass-border); margin-bottom:10px; }
+  .loc-type { font-size:10px; font-weight:600; color:var(--blue-accent); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px; }
+  .loc-name { font-size:15px; font-weight:500; color:var(--white); }
+  .loc-sub  { font-size:12px; color:var(--muted); margin-top:2px; }
+
+  .toggle-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px;
+    border-radius:14px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    margin-bottom:10px;
+  }
+  .toggle-info { flex:1; }
+  .toggle-label { font-size:14px; font-weight:500; color:var(--white); }
+  .toggle-sub   { font-size:12px; color:var(--muted); margin-top:2px; font-weight:300; }
+  .toggle-switch {
+    width:48px; height:28px;
+    background:rgba(255,255,255,0.1);
+    border-radius:14px;
+    position:relative;
+    cursor:pointer;
+    border:1px solid var(--glass-border);
+    transition:all 0.3s;
+  }
+  .toggle-switch.on { background:var(--blue-accent); border-color:var(--blue-accent); }
+  .toggle-knob {
+    position:absolute;
+    top:3px; left:3px;
+    width:20px; height:20px;
+    background:#fff;
+    border-radius:50%;
+    transition:all 0.3s;
+    box-shadow:0 2px 6px rgba(0,0,0,0.3);
+  }
+  .toggle-switch.on .toggle-knob { left:23px; }
+
+  .selected-ride-summary {
+    display:flex; align-items:center; gap:12px;
+    padding:16px;
+    border-radius:14px;
+    background:linear-gradient(135deg,rgba(26,58,255,0.15),rgba(0,11,61,0.4));
+    border:1px solid rgba(79,142,255,0.25);
+    margin-bottom:20px;
+  }
+
+  /* SCREEN 7 — PAYMENT */
+  #payment { overflow:hidden; }
+  .payment-scroll {
+    flex:1; overflow-y:auto;
+    padding:20px 20px 100px;
+    scrollbar-width:none;
+  }
+  .payment-scroll::-webkit-scrollbar { display:none; }
+  .amount-display {
+    text-align:center;
+    padding:32px 20px;
+    margin-bottom:24px;
+  }
+  .amount-label { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .amount-val { font-family:'Syne',sans-serif; font-size:52px; font-weight:800; color:var(--white); }
+  .amount-sub { font-size:13px; color:var(--muted); margin-top:4px; font-weight:300; }
+
+  .payment-method {
+    display:flex; align-items:center; gap:14px;
+    padding:16px;
+    border-radius:14px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .payment-method.selected {
+    background:rgba(79,142,255,0.12);
+    border-color:var(--blue-accent);
+  }
+  .payment-method:active { transform:scale(0.98); }
+  .pay-icon {
+    width:44px; height:44px;
+    border-radius:12px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:22px;
+  }
+  .pay-name { font-size:15px; font-weight:500; color:var(--white); flex:1; }
+  .pay-check { font-size:18px; color:var(--blue-accent); }
+
+  /* SCREEN 8 — CONFIRMATION */
+  #confirm {
+    align-items:center;
+    justify-content:center;
+    gap:0;
+    padding:0 28px;
+  }
+  .confirm-circle {
+    width:120px; height:120px;
+    border-radius:50%;
+    background:linear-gradient(135deg,rgba(0,227,150,0.15),rgba(0,11,61,0.4));
+    border:2px solid var(--green);
+    display:flex; align-items:center; justify-content:center;
+    margin-bottom:24px;
+    animation: pop 0.6s ease 0.2s both;
+    box-shadow:0 0 40px rgba(0,227,150,0.25);
+  }
+  .confirm-check { font-size:48px; animation: fadeIn 0.4s ease 0.6s both; }
+  .confirm-title {
+    font-family:'Syne',sans-serif;
+    font-size:28px; font-weight:800;
+    color:var(--white);
+    text-align:center;
+    margin-bottom:8px;
+    animation: fadeInUp 0.5s ease 0.4s both;
+  }
+  .confirm-sub {
+    font-size:14px; color:var(--muted);
+    text-align:center; font-weight:300;
+    margin-bottom:32px;
+    animation: fadeInUp 0.5s ease 0.5s both;
+  }
+  .driver-card {
+    width:100%;
+    padding:20px;
+    border-radius:var(--card-radius);
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    margin-bottom:16px;
+    animation: fadeInUp 0.5s ease 0.6s both;
+  }
+  .driver-row { display:flex; align-items:center; gap:14px; margin-bottom:14px; }
+  .driver-avatar {
+    width:52px; height:52px;
+    border-radius:50%;
+    background:linear-gradient(135deg,#1a3aff,#4f8eff);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:#fff;
+  }
+  .driver-name { font-family:'Syne',sans-serif; font-size:17px; font-weight:700; color:var(--white); }
+  .driver-vehicle { font-size:12px; color:var(--muted); margin-top:3px; font-weight:300; letter-spacing:0.5px; }
+  .driver-rating { font-size:13px; color:var(--yellow); margin-top:2px; }
+  .driver-eta-row { display:flex; justify-content:space-between; align-items:center; padding-top:14px; border-top:1px solid var(--glass-border); }
+  .driver-eta-label { font-size:12px; color:var(--muted); }
+  .driver-eta-val { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; color:var(--blue-accent); }
+
+  /* SCREEN 9 — LIVE TRACKING */
+  #tracking { overflow:hidden; }
+  .tracking-map {
+    height:380px;
+    background:linear-gradient(160deg,#001166,#000833);
+    flex-shrink:0;
+    position:relative;
+    overflow:hidden;
+  }
+  .tracking-info {
+    position:absolute;
+    bottom:0; left:0; right:0;
+    padding:16px 20px;
+    background:linear-gradient(to top, rgba(0,11,61,0.95), transparent);
+  }
+  .tracking-status {
+    display:inline-flex; align-items:center; gap:6px;
+    background:rgba(0,227,150,0.1);
+    border:1px solid rgba(0,227,150,0.3);
+    border-radius:20px;
+    padding:5px 12px;
+    font-size:12px; font-weight:600;
+    color:var(--green);
+    margin-bottom:10px;
+  }
+  .tracking-status-dot {
+    width:6px; height:6px;
+    border-radius:50%;
+    background:var(--green);
+    animation:ping 1.2s ease-in-out infinite;
+  }
+  .tracking-eta { font-family:'Syne',sans-serif; font-size:32px; font-weight:800; color:var(--white); }
+  .tracking-sub { font-size:13px; color:var(--muted); font-weight:300; }
+
+  .tracking-panel {
+    flex:1; overflow-y:auto;
+    padding:16px 20px 100px;
+    scrollbar-width:none;
+  }
+  .tracking-panel::-webkit-scrollbar { display:none; }
+  .step-timeline { display:flex; flex-direction:column; gap:0; }
+  .step-item { display:flex; gap:14px; padding:10px 0; position:relative; }
+  .step-icon-col { display:flex; flex-direction:column; align-items:center; }
+  .step-icon { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; }
+  .step-line { flex:1; width:2px; background:var(--glass-border); margin:4px 0; min-height:16px; }
+  .step-content { flex:1; padding-top:4px; }
+  .step-title { font-size:14px; font-weight:500; color:var(--white); }
+  .step-sub   { font-size:12px; color:var(--muted); margin-top:2px; font-weight:300; }
+  .step-item.active .step-icon { background:rgba(79,142,255,0.2); border:1px solid var(--blue-accent); }
+  .step-item.done .step-icon   { background:rgba(0,227,150,0.15); border:1px solid var(--green); }
+  .step-item.pending .step-icon { background:var(--glass); border:1px solid var(--glass-border); }
+
+  /* SCREEN 10 — ACTIVITY */
+  #activity { overflow:hidden; }
+  .activity-scroll {
+    flex:1; overflow-y:auto;
+    padding:16px 20px 100px;
+    scrollbar-width:none;
+  }
+  .activity-scroll::-webkit-scrollbar { display:none; }
+  .history-card {
+    display:flex; align-items:center; gap:14px;
+    padding:16px;
+    border-radius:14px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    margin-bottom:10px;
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .history-card:active { transform:scale(0.98); }
+  .history-logo { width:40px; height:40px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; font-family:'Syne',sans-serif; flex-shrink:0; }
+  .history-info { flex:1; }
+  .history-route { font-size:14px; font-weight:500; color:var(--white); }
+  .history-date  { font-size:12px; color:var(--muted); margin-top:2px; font-weight:300; }
+  .history-right { text-align:right; }
+  .history-price { font-family:'Syne',sans-serif; font-size:16px; font-weight:700; color:var(--white); }
+  .history-rebook { font-size:11px; color:var(--blue-accent); margin-top:3px; cursor:pointer; font-weight:500; }
+
+  /* SCREEN 11 — ACCOUNT */
+  #account { overflow:hidden; }
+  .account-scroll {
+    flex:1; overflow-y:auto;
+    padding:16px 20px 100px;
+    scrollbar-width:none;
+  }
+  .account-scroll::-webkit-scrollbar { display:none; }
+  .profile-header {
+    display:flex; align-items:center; gap:16px;
+    padding:20px;
+    border-radius:var(--card-radius);
+    background:linear-gradient(135deg,rgba(26,58,255,0.15),rgba(0,11,61,0.4));
+    border:1px solid rgba(79,142,255,0.2);
+    margin-bottom:24px;
+  }
+  .profile-avatar {
+    width:60px; height:60px; border-radius:50%;
+    background:linear-gradient(135deg,#1a3aff,#4f8eff);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Syne',sans-serif; font-size:24px; font-weight:700; color:#fff;
+    box-shadow:0 0 20px rgba(26,58,255,0.4);
+  }
+  .profile-name { font-family:'Syne',sans-serif; font-size:20px; font-weight:700; color:var(--white); }
+  .profile-email { font-size:13px; color:var(--muted); margin-top:3px; font-weight:300; }
+  .profile-tag { margin-top:6px; display:inline-block; font-size:10px; font-weight:600; color:var(--blue-accent); background:rgba(79,142,255,0.1); border:1px solid rgba(79,142,255,0.2); padding:2px 10px; border-radius:20px; letter-spacing:0.5px; }
+
+  .menu-group { margin-bottom:20px; }
+  .menu-item {
+    display:flex; align-items:center; gap:14px;
+    padding:16px;
+    cursor:pointer;
+    border-bottom:1px solid var(--glass-border);
+    transition:all 0.2s;
+  }
+  .menu-item:last-child { border-bottom:none; }
+  .menu-item:active { background:var(--glass); }
+  .menu-icon {
+    width:38px; height:38px;
+    border-radius:11px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+  }
+  .menu-text { flex:1; }
+  .menu-label { font-size:14px; font-weight:500; color:var(--white); }
+  .menu-sub   { font-size:12px; color:var(--muted); margin-top:2px; font-weight:300; }
+  .menu-arrow { font-size:16px; color:var(--muted); }
+  .menu-badge {
+    background:var(--blue-accent);
+    color:#fff;
+    font-size:10px; font-weight:700;
+    padding:2px 7px;
+    border-radius:20px;
+  }
+
+  /* COMMUTE SCREEN */
+  #commute { overflow:hidden; }
+  .commute-scroll {
+    flex:1; overflow-y:auto;
+    padding:16px 20px 100px;
+    scrollbar-width:none;
+  }
+  .commute-scroll::-webkit-scrollbar { display:none; }
+  .alert-card {
+    padding:20px;
+    border-radius:var(--card-radius);
+    background:linear-gradient(135deg,rgba(26,58,255,0.2),rgba(0,11,61,0.4));
+    border:1px solid rgba(79,142,255,0.3);
+    margin-bottom:16px;
+  }
+  .alert-time { font-family:'Syne',sans-serif; font-size:42px; font-weight:800; color:var(--white); }
+  .alert-label { font-size:12px; color:var(--blue-accent); text-transform:uppercase; letter-spacing:1px; font-weight:600; }
+  .alert-route { font-size:14px; color:var(--muted); margin-top:6px; font-weight:300; }
+
+  .traffic-heatmap {
+    padding:16px;
+    border-radius:14px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    margin-bottom:16px;
+  }
+  .heatmap-label { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; font-weight:600; margin-bottom:12px; }
+  .heatmap-bars { display:flex; gap:4px; align-items:flex-end; height:48px; }
+  .heatmap-bar {
+    flex:1;
+    border-radius:4px 4px 0 0;
+    transition:all 0.3s;
+  }
+
+  .screen-header {
+    display:flex; align-items:center; gap:12px;
+    padding:48px 20px 16px;
+    flex-shrink:0;
+  }
+  .screen-header-title {
+    font-family:'Syne',sans-serif;
+    font-size:22px; font-weight:700;
+    color:var(--white);
+  }
+  /* FIX: clean header-back style — no more inline CSS junk */
+  .header-back {
+    width:38px; height:38px;
+    background:var(--glass);
+    border:1px solid var(--glass-border);
+    border-radius:11px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:18px;
+    color: #ffffff;
+    cursor:pointer;
+    transition:all 0.2s;
+    flex-shrink:0;
+  }
+  .header-back:active { transform:scale(0.92); }
+
+  .nav-controls {
+    position:fixed;
+    top:16px; left:50%;
+    transform:translateX(-50%);
+    display:flex; gap:8px;
+    z-index:9999;
+    background:rgba(0,5,20,0.8);
+    padding:6px 12px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,0.1);
+    backdrop-filter:blur(10px);
+  }
+  .nav-dot-ctrl {
+    width:8px; height:8px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.2);
+    cursor:pointer;
+    transition:all 0.2s;
+  }
+  .nav-dot-ctrl.current { background:var(--blue-accent); }
+</style>
+</head>
+<body>
+
+<div class="nav-controls" id="navControls"></div>
+
+<div class="phone-frame">
+  <div class="notch"></div>
+
+  <!-- SCREEN 1 — SPLASH -->
+  <div class="screen active" id="splash">
+    <img src="data:image/png;base64,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" alt="VELO" style="width:290px;max-width:80%;position:relative;z-index:1;animation:fadeIn 1s ease 0.3s both;">
+    <div class="splash-tag">Predict. Prevent. Move.</div>
+    <div class="splash-lines">
+      <div class="splash-line"></div>
+      <div class="splash-line"></div>
+      <div class="splash-line"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2 — LOGIN -->
+  <div class="screen" id="login">
+    <div class="login-glow-orb"></div>
+    <div class="login-top">
+      <img src="data:image/png;base64,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" alt="VELO" class="anim-fade-up" style="width:220px;max-width:70%;animation:fadeInUp 0.6s ease both;">
+      <div class="login-tagline anim-fade-up delay-1">Smarter rides, better vibez</div>
+    </div>
+    <div class="login-bottom">
+      <input class="input-field anim-fade-up delay-2" type="text" placeholder="Email or phone number">
+      <button class="primary-btn anim-fade-up delay-3" style="height:54px;font-size:16px;" onclick="goTo('home')">Continue →</button>
+      <div class="divider-row anim-fade-up delay-4">
+        <div class="divider-line"></div>
+        <div class="divider-text">or sign in with</div>
+        <div class="divider-line"></div>
+      </div>
+      <div class="social-row anim-fade-up delay-5">
+        <button class="glass-btn social-btn" onclick="goTo('home')">🔵 Google</button>
+        <button class="glass-btn social-btn" onclick="goTo('home')"> Apple</button>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px;" class="anim-fade-up delay-6">
+        By continuing, you agree to our Terms &amp; Privacy Policy
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3 — HOME -->
+  <div class="screen" id="home">
+    <div class="status-bar">
+      <div class="status-time">9:41</div>
+      <div class="status-icons">
+        <span>●●●</span><span>WiFi</span><span>🔋</span>
+      </div>
+    </div>
+    <div class="home-scroll">
+      <div class="greeting-section anim-fade-up">
+        <div class="greeting-hi">Good morning,</div>
+        <div class="greeting-name">Aishwarya 👋</div>
+        <div class="greeting-sub">Thursday, 7 April 2026</div>
+      </div>
+      <div class="section-label anim-fade-up delay-1">Quick Routes</div>
+      <div class="quick-routes anim-fade-up delay-2">
+        <div class="glass-card route-card" onclick="goTo('compare')">
+          <div class="route-from">Home →</div>
+          <div class="route-to">Kurla</div>
+          <div class="route-meta">
+            <div class="route-pill">~35 min</div>
+            <div class="route-pill">₹190</div>
+          </div>
+        </div>
+        <div class="glass-card route-card" onclick="goTo('compare')">
+          <div class="route-from">Home →</div>
+          <div class="route-to">College</div>
+          <div class="route-meta">
+            <div class="route-pill">~22 min</div>
+            <div class="route-pill">₹140</div>
+          </div>
+        </div>
+        <div class="glass-card route-card" onclick="goTo('compare')">
+          <div class="route-from">Home →</div>
+          <div class="route-to">Work</div>
+          <div class="route-meta">
+            <div class="route-pill">~48 min</div>
+            <div class="route-pill">₹260</div>
+          </div>
+        </div>
+      </div>
+      <div class="section-label anim-fade-up delay-2">Smart Commute</div>
+      <div class="commute-widget anim-fade-up delay-3" onclick="goTo('commute')">
+        <div class="commute-top">
+          <div>
+            <div class="commute-label">🎓 Class Today</div>
+            <div class="commute-class">Arrive by 12:00 PM</div>
+          </div>
+          <div class="traffic-dot"></div>
+        </div>
+        <div class="commute-leave">
+          <div class="leave-in">Leave in</div>
+          <div class="leave-time">28</div>
+          <div class="leave-min">min</div>
+        </div>
+        <div class="traffic-bar"><div class="traffic-fill"></div></div>
+        <div style="font-size:11px;color:var(--muted);margin-top:6px;font-weight:300;">Traffic: Moderate · Thane → Kurla</div>
+      </div>
+      <button class="primary-btn compare-btn anim-fade-up delay-4" onclick="goTo('compare')">🔀 Compare Rides</button>
+      <div class="section-label anim-fade-up delay-5">Recent</div>
+      <div class="glass-card" style="padding:16px;border-radius:14px;cursor:pointer;" onclick="goTo('activity')">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="ride-logo logo-uber" style="width:38px;height:38px;border-radius:10px;font-size:11px;">UBER</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:500;color:var(--white);">Thane → Kurla</div>
+            <div style="font-size:12px;color:var(--muted);font-weight:300;">Yesterday · 11:22 AM</div>
+          </div>
+          <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--white);">₹550</div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item active" onclick="goTo('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div><div class="nav-dot"></div></div>
+      <div class="nav-item" onclick="goTo('compare')"><div class="nav-icon">🔀</div><div class="nav-label">Rides</div></div>
+      <div class="nav-item" onclick="goTo('activity')"><div class="nav-icon">📋</div><div class="nav-label">Activity</div></div>
+      <div class="nav-item" onclick="goTo('account')"><div class="nav-icon">👤</div><div class="nav-label">Account</div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4 — COMPARE -->
+  <div class="screen" id="compare">
+    <div class="map-area">
+      <div class="map-grid"></div>
+      <div class="map-top-bar" style="top:52px;">
+        <div class="header-back" onclick="goTo('home')">←</div>
+        <div class="map-search-box">Thane → Kurla Station</div>
+      </div>
+      <div class="map-route-line"></div>
+      <div class="map-pin start"></div>
+      <div class="map-pin end"></div>
+      <div class="map-car">🚗</div>
+      <div class="map-label">📍 3.2 km · ~14 min</div>
+    </div>
+    <div class="compare-bottom">
+      <div class="filter-row anim-fade-up">
+        <div class="filter-chip active">All</div>
+        <div class="filter-chip" onclick="filterRides(this)">Cheapest</div>
+        <div class="filter-chip" onclick="filterRides(this)">Fastest</div>
+        <div class="filter-chip" onclick="filterRides(this)">Luxury</div>
+        <div class="filter-chip" onclick="filterRides(this)">Shared</div>
+      </div>
+      <div class="glass-card ride-card best anim-fade-up delay-1" onclick="goTo('ridedetail')">
+        <div class="best-tag">Best Value</div>
+        <div class="ride-row">
+          <div class="ride-logo logo-rapido">R</div>
+          <div class="ride-info"><div class="ride-name">Rapido Cab</div><div class="ride-sub">Standard · 4 seats</div></div>
+          <div class="ride-right"><div class="ride-price">₹580</div><div class="ride-eta">14 min ETA</div><div class="ride-rating">★ 4.6</div></div>
+        </div>
+      </div>
+      <div class="glass-card ride-card anim-fade-up delay-2" onclick="goTo('ridedetail')">
+        <div class="ride-row">
+          <div class="ride-logo logo-ola">OLA</div>
+          <div class="ride-info"><div class="ride-name">Ola Mini</div><div class="ride-sub">Hatchback · 4 seats</div></div>
+          <div class="ride-right"><div class="ride-price">₹645</div><div class="ride-eta">11 min ETA</div><div class="ride-rating">★ 4.4</div></div>
+        </div>
+      </div>
+      <div class="glass-card ride-card anim-fade-up delay-3" onclick="goTo('ridedetail')">
+        <div class="ride-row">
+          <div class="ride-logo logo-uber">UBER</div>
+          <div class="ride-info"><div class="ride-name">Uber Go</div><div class="ride-sub">Standard · 4 seats</div></div>
+          <div class="ride-right"><div class="ride-price">₹630</div><div class="ride-eta">12 min ETA</div><div class="ride-rating">★ 4.7</div></div>
+        </div>
+      </div>
+      <div class="glass-card ride-card anim-fade-up delay-4" onclick="goTo('ridedetail')">
+        <div class="ride-row">
+          <div class="ride-logo logo-uber" style="background:#1a1a1a;">UBER<br><span style="font-size:8px">PREM</span></div>
+          <div class="ride-info"><div class="ride-name">Uber Premier</div><div class="ride-sub">Sedan · 4 seats · AC</div></div>
+          <div class="ride-right"><div class="ride-price">₹750</div><div class="ride-eta">8 min ETA</div><div class="ride-rating">★ 4.8</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+      <div class="nav-item active" onclick="goTo('compare')"><div class="nav-icon">🔀</div><div class="nav-label">Rides</div><div class="nav-dot"></div></div>
+      <div class="nav-item" onclick="goTo('activity')"><div class="nav-icon">📋</div><div class="nav-label">Activity</div></div>
+      <div class="nav-item" onclick="goTo('account')"><div class="nav-icon">👤</div><div class="nav-label">Account</div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5 — RIDE DETAIL -->
+  <div class="screen" id="ridedetail">
+    <div class="detail-map">
+      <div class="map-grid"></div>
+      <div class="back-btn" onclick="goTo('compare')">←</div>
+      <div class="map-route-line" style="left:8%;right:8%;"></div>
+      <div class="map-pin start" style="left:8%"></div>
+      <div class="map-pin end" style="right:8%"></div>
+      <div class="map-car">🚗</div>
+      <div style="position:absolute;top:40%;left:35%;width:8px;height:8px;background:var(--yellow);border-radius:50%;opacity:0.8;"></div>
+      <div style="position:absolute;top:55%;left:55%;width:8px;height:8px;background:var(--red);border-radius:50%;opacity:0.6;"></div>
+    </div>
+    <div class="detail-scroll">
+      <div class="detail-header anim-fade-up">
+        <div class="detail-logo logo-rapido">R</div>
+        <div><div class="detail-title">Rapido Cab</div><div class="detail-sub">Standard · ★ 4.6 · Best Value</div></div>
+        <div class="detail-price">₹580 </div>
+      </div>
+      <div class="info-grid anim-fade-up delay-1">
+        <div class="info-tile"><div class="info-tile-label">ETA</div><div class="info-tile-val">14 <span class="info-tile-unit">min</span></div></div>
+        <div class="info-tile"><div class="info-tile-label">Distance</div><div class="info-tile-val">3.2 <span class="info-tile-unit">km</span></div></div>
+        <div class="info-tile"><div class="info-tile-label">Arrival</div><div class="info-tile-val">11<span class="info-tile-unit">:56 AM</span></div></div>
+        <div class="info-tile"><div class="info-tile-label">Traffic</div><div class="info-tile-val" style="color:var(--yellow);">Mod</div></div>
+      </div>
+      <div class="route-preview anim-fade-up delay-2">
+        <div class="section-label" style="margin-bottom:12px;">Route</div>
+        <div class="route-stops">
+          <div class="route-stop"><div class="stop-dot origin"></div><div><div class="stop-name">Thane Station</div><div class="stop-sub">Pickup · Now</div></div></div>
+          <div style="display:flex;padding-left:4px;"><div class="stop-line"></div></div>
+          <div class="route-stop"><div class="stop-dot dest"></div><div><div class="stop-name">Kurla Station</div><div class="stop-sub">Drop · ~11:56 AM</div></div></div>
+        </div>
+      </div>
+      <div class="glass-card anim-fade-up delay-3" style="padding:14px;border-radius:14px;margin-bottom:20px;">
+        <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600;">Traffic Forecast</div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <div style="flex:3;height:6px;border-radius:3px;background:var(--green);"></div>
+          <div style="flex:2;height:6px;border-radius:3px;background:var(--yellow);"></div>
+          <div style="flex:1;height:6px;border-radius:3px;background:var(--red);"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:11px;color:var(--muted);"><span>Clear</span><span>Moderate</span><span>Heavy</span></div>
+      </div>
+      <button class="primary-btn" style="width:100%;height:56px;font-size:16px;" onclick="goTo('booking')">Book Rapido Cab →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 6 — BOOKING (FIXED) -->
+  <div class="screen" id="booking">
+    <div class="screen-header">
+      <div class="header-back" onclick="goTo('ridedetail')">←</div>
+      <div class="screen-header-title">Confirm Booking</div>
+    </div>
+    <div class="booking-scroll">
+      <div class="selected-ride-summary anim-fade-up">
+        <div class="ride-logo logo-rapido">R</div>
+        <div style="flex:1"><div class="ride-name">Rapido Cab</div><div class="ride-sub">Best Value · ★ 4.6</div></div>
+        <div class="detail-price" style="font-size:26px;">₹580</div>
+      </div>
+      <div class="section-label anim-fade-up delay-1">Locations</div>
+      <div class="location-card anim-fade-up delay-1"><div class="loc-type">📍 Pickup</div><div class="loc-name">Thane Station</div><div class="loc-sub">Platform 1 exit · Thane West</div></div>
+      <div class="location-card anim-fade-up delay-2"><div class="loc-type">🏁 Drop</div><div class="loc-name">Kurla Station</div><div class="loc-sub">LBS Road · Kurla West</div></div>
+      <div class="section-label anim-fade-up delay-3" style="margin-top:16px;">Options</div>
+      <div class="toggle-row anim-fade-up delay-3" onclick="toggleSwitch(this.querySelector('.toggle-switch'))">
+        <div class="toggle-info"><div class="toggle-label">Auto-select cheapest</div><div class="toggle-sub">Always pick lowest price option</div></div>
+        <div class="toggle-switch on"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="toggle-row anim-fade-up delay-4" onclick="toggleSwitch(this.querySelector('.toggle-switch'))">
+        <div class="toggle-info"><div class="toggle-label">Share ride</div><div class="toggle-sub">Split cost with co-passengers</div></div>
+        <div class="toggle-switch"><div class="toggle-knob"></div></div>
+      </div>
+      <div class="glass-card anim-fade-up delay-5" style="padding:16px;border-radius:14px;margin-top:16px;margin-bottom:20px;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;font-weight:300;"><span>Ride fare</span><span style="color:var(--white)">₹580</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-bottom:8px;font-weight:300;"><span>Platform fee</span><span style="color:var(--white)">₹0</span></div>
+        <div style="height:1px;background:var(--glass-border);margin:8px 0;"></div>
+        <div style="display:flex;justify-content:space-between;font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--white);"><span>Total</span><span>₹580</span></div>
+      </div>
+      <button class="primary-btn" style="width:100%;height:56px;font-size:16px;" onclick="goTo('payment')">Proceed to Payment →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 7 — PAYMENT (FIXED) -->
+  <div class="screen" id="payment">
+    <div class="screen-header">
+      <div class="header-back" onclick="goTo('booking')">←</div>
+      <div class="screen-header-title">Payment</div>
+    </div>
+    <div class="payment-scroll">
+      <div class="amount-display anim-fade-up">
+        <div class="amount-label">Total Amount</div>
+        <div class="amount-val">₹580</div>
+        <div class="amount-sub">Rapido Cab · Thane → Kurla</div>
+      </div>
+      <div class="section-label anim-fade-up delay-1">Choose Payment</div>
+      <div class="payment-method selected anim-fade-up delay-1" onclick="selectPay(this)">
+        <div class="pay-icon" style="background:rgba(79,142,255,0.1);">📱</div>
+        <div class="pay-name">UPI<br><span style="font-size:11px;color:var(--muted);font-weight:300;">aishwarya@okaxis</span></div>
+        <div class="pay-check">✓</div>
+      </div>
+      <div class="payment-method anim-fade-up delay-2" onclick="selectPay(this)">
+        <div class="pay-icon" style="background:rgba(255,183,0,0.1);">💳</div>
+        <div class="pay-name">Credit Card<br><span style="font-size:11px;color:var(--muted);font-weight:300;">•••• •••• •••• 4521</span></div>
+        <div style="font-size:14px;color:var(--muted);">›</div>
+      </div>
+      <div class="payment-method anim-fade-up delay-3" onclick="selectPay(this)">
+        <div class="pay-icon" style="background:rgba(0,227,150,0.1);">👛</div>
+        <div class="pay-name">VELO Wallet<br><span style="font-size:11px;color:var(--green);font-weight:300;">₹1000 available</span></div>
+        <div style="font-size:14px;color:var(--muted);">›</div>
+      </div>
+      <div class="toggle-row anim-fade-up delay-4" style="margin-top:16px;" onclick="toggleSwitch(this.querySelector('.toggle-switch'))">
+        <div class="toggle-info"><div class="toggle-label">Enable Auto-Pay</div><div class="toggle-sub">For future rides via VELO</div></div>
+        <div class="toggle-switch"><div class="toggle-knob"></div></div>
+      </div>
+      <button class="primary-btn anim-fade-up delay-5" style="width:100%;height:56px;font-size:16px;margin-top:24px;" onclick="goTo('confirm')">Pay ₹580 →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 8 — CONFIRMATION -->
+  <div class="screen" id="confirm">
+    <div class="confirm-circle"><div class="confirm-check">✓</div></div>
+    <div class="confirm-title">Ride Confirmed!</div>
+    <div class="confirm-sub">Your Rapido Cab is on its way.<br>Sit back and relax.</div>
+    <div class="driver-card">
+      <div class="driver-row">
+        <div class="driver-avatar">R</div>
+        <div style="flex:1">
+          <div class="driver-name">Ramesh Kumar</div>
+          <div class="driver-vehicle">MH-04 AB 7823 · Tata Indica</div>
+          <div class="driver-rating">★★★★★ 4.8</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="glass-btn" style="width:40px;height:40px;border-radius:12px;font-size:18px;">📞</button>
+          <button class="glass-btn" style="width:40px;height:40px;border-radius:12px;font-size:18px;">💬</button>
+        </div>
+      </div>
+      <div class="driver-eta-row">
+        <div><div class="driver-eta-label">Driver arriving in</div></div>
+        <div class="driver-eta-val">14 min</div>
+      </div>
+    </div>
+    <button class="primary-btn" style="width:100%;height:52px;font-size:15px;margin-top:8px;" onclick="goTo('tracking')">Track Live →</button>
+  </div>
+
+  <!-- SCREEN 9 — LIVE TRACKING -->
+  <div class="screen" id="tracking">
+    <div class="tracking-map">
+      <div class="map-grid"></div>
+      <div class="back-btn" onclick="goTo('home')">✕</div>
+      <div class="map-route-line" style="top:45%;left:15%;right:15%;"></div>
+      <div class="map-pin start" style="left:15%;top:45%;"></div>
+      <div class="map-pin end" style="right:15%;top:45%;"></div>
+      <div style="position:absolute;top:calc(45% - 14px);font-size:22px;animation:car-move 4s linear infinite;">🚗</div>
+      <div style="position:absolute;top:calc(45% - 14px);left:15%;width:28px;height:28px;">
+        <div style="position:absolute;inset:-8px;border-radius:50%;background:rgba(79,142,255,0.2);animation:ping 1.5s ease-in-out infinite;"></div>
+      </div>
+      <div class="tracking-info">
+        <div class="tracking-status"><div class="tracking-status-dot"></div>Driver en route</div>
+        <div class="tracking-eta">14 min</div>
+        <div class="tracking-sub">Ramesh Kumar · MH-04 AB 7823</div>
+      </div>
+    </div>
+    <div class="tracking-panel">
+      <div class="step-timeline anim-fade-up">
+        <div class="step-item done">
+          <div class="step-icon-col"><div class="step-icon">✅</div><div class="step-line"></div></div>
+          <div class="step-content"><div class="step-title">Ride Confirmed</div><div class="step-sub">11:41 AM · ₹580 via UPI</div></div>
+        </div>
+        <div class="step-item active">
+          <div class="step-icon-col"><div class="step-icon">🚗</div><div class="step-line"></div></div>
+          <div class="step-content"><div class="step-title">Driver Arriving</div><div class="step-sub">ETA 14 min · 2.1 km away</div></div>
+        </div>
+        <div class="step-item pending">
+          <div class="step-icon-col"><div class="step-icon">▶️</div><div class="step-line"></div></div>
+          <div class="step-content"><div class="step-title">Ride Started</div><div class="step-sub">Pending</div></div>
+        </div>
+        <div class="step-item pending">
+          <div class="step-icon-col"><div class="step-icon">🏁</div></div>
+          <div class="step-content"><div class="step-title">Arrived at Kurla</div><div class="step-sub">Est. 11:56 AM</div></div>
+        </div>
+      </div>
+      <div class="glass-card" style="padding:16px;border-radius:14px;margin-top:20px;display:flex;gap:10px;">
+        <button class="glass-btn" style="flex:1;height:48px;font-size:13px;" onclick="goTo('home')">🏠 Cancel</button>
+        <button class="glass-btn" style="flex:1;height:48px;font-size:13px;">📞 Call Driver</button>
+        <button class="glass-btn" style="flex:1;height:48px;font-size:13px;">🆘 SOS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 10 — ACTIVITY -->
+  <div class="screen" id="activity">
+    <div class="screen-header"><div class="screen-header-title">Activity</div></div>
+    <div class="activity-scroll">
+      <div class="section-label anim-fade-up">This Week</div>
+      <div class="history-card anim-fade-up delay-1">
+        <div class="history-logo logo-rapido">R</div>
+        <div class="history-info"><div class="history-route">Thane → Kurla</div><div class="history-date">Today · 11:41 AM · Rapido</div></div>
+        <div class="history-right"><div class="history-price">₹580</div><div class="history-rebook" onclick="goTo('compare')">Rebook →</div></div>
+      </div>
+      <div class="history-card anim-fade-up delay-2">
+        <div class="history-logo logo-uber">UBER</div>
+        <div class="history-info"><div class="history-route">Thane → Kurla</div><div class="history-date">Yesterday · 11:22 AM · Uber</div></div>
+        <div class="history-right"><div class="history-price">₹215</div><div class="history-rebook" onclick="goTo('compare')">Rebook →</div></div>
+      </div>
+      <div class="history-card anim-fade-up delay-3">
+        <div class="history-logo logo-ola">OLA</div>
+        <div class="history-info"><div class="history-route">Kurla → Home</div><div class="history-date">Wed, 4 Mar · 4:30 PM · Ola</div></div>
+        <div class="history-right"><div class="history-price">₹198</div><div class="history-rebook" onclick="goTo('compare')">Rebook →</div></div>
+      </div>
+      <div class="section-label anim-fade-up delay-4" style="margin-top:16px;">Last Week</div>
+      <div class="history-card anim-fade-up delay-4">
+        <div class="history-logo logo-uber">UBER</div>
+        <div class="history-info"><div class="history-route">Thane → Airport</div><div class="history-date">Fri, 28 Feb · 6:00 AM · Uber</div></div>
+        <div class="history-right"><div class="history-price">₹680</div><div class="history-rebook" onclick="goTo('compare')">Rebook →</div></div>
+      </div>
+      <div class="history-card anim-fade-up delay-5">
+        <div class="history-logo logo-rapido">R</div>
+        <div class="history-info"><div class="history-route">Home → College</div><div class="history-date">Thu, 27 Feb · 9:15 AM · Rapido</div></div>
+        <div class="history-right"><div class="history-price">₹145</div><div class="history-rebook" onclick="goTo('compare')">Rebook →</div></div>
+      </div>
+      <div class="glass-card anim-fade-up delay-6" style="padding:20px;border-radius:14px;margin-top:16px;">
+        <div class="section-label" style="margin-bottom:14px;">This Month</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;text-align:center;">
+          <div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--white);">12</div><div style="font-size:11px;color:var(--muted);margin-top:2px;font-weight:300;">Rides</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--green);">₹2,418</div><div style="font-size:11px;color:var(--muted);margin-top:2px;font-weight:300;">Spent</div></div>
+          <div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;color:var(--blue-accent);">₹310</div><div style="font-size:11px;color:var(--muted);margin-top:2px;font-weight:300;">Saved</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+      <div class="nav-item" onclick="goTo('compare')"><div class="nav-icon">🔀</div><div class="nav-label">Rides</div></div>
+      <div class="nav-item active" onclick="goTo('activity')"><div class="nav-icon">📋</div><div class="nav-label">Activity</div><div class="nav-dot"></div></div>
+      <div class="nav-item" onclick="goTo('account')"><div class="nav-icon">👤</div><div class="nav-label">Account</div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 11 — ACCOUNT -->
+  <div class="screen" id="account">
+    <div class="screen-header"><div class="screen-header-title">Account</div></div>
+    <div class="account-scroll">
+      <div class="profile-header anim-fade-up">
+        <div class="profile-avatar">A</div>
+        <div><div class="profile-name">Aishwarya</div><div class="profile-email">aishwarya@email.com</div><div class="profile-tag">⭐ VELO Pro</div></div>
+      </div>
+      <div class="glass-card menu-group anim-fade-up delay-1" style="border-radius:14px;overflow:hidden;">
+        <div class="menu-item" onclick="goTo('commute')"><div class="menu-icon">⏰</div><div class="menu-text"><div class="menu-label">Commute Alerts</div><div class="menu-sub">1 alert active · Thane → Kurla</div></div><div class="menu-arrow">›</div></div>
+        <div class="menu-item"><div class="menu-icon">💳</div><div class="menu-text"><div class="menu-label">Payment Methods</div><div class="menu-sub">UPI, Card, Wallet</div></div><div class="menu-arrow">›</div></div>
+        <div class="menu-item"><div class="menu-icon">📍</div><div class="menu-text"><div class="menu-label">Saved Locations</div><div class="menu-sub">Home, College, Work</div></div><div class="menu-arrow">›</div></div>
+      </div>
+      <div class="glass-card menu-group anim-fade-up delay-2" style="border-radius:14px;overflow:hidden;">
+        <div class="menu-item"><div class="menu-icon">🔔</div><div class="menu-text"><div class="menu-label">Notifications</div><div class="menu-sub">Push, SMS, Email</div></div><div class="menu-badge">3</div></div>
+        <div class="menu-item"><div class="menu-icon">🔒</div><div class="menu-text"><div class="menu-label">Privacy &amp; Security</div><div class="menu-sub">2FA enabled</div></div><div class="menu-arrow">›</div></div>
+        <div class="menu-item"><div class="menu-icon">⚙️</div><div class="menu-text"><div class="menu-label">Settings</div><div class="menu-sub">Theme, language, preferences</div></div><div class="menu-arrow">›</div></div>
+      </div>
+      <div class="glass-card menu-group anim-fade-up delay-3" style="border-radius:14px;overflow:hidden;">
+        <div class="menu-item"><div class="menu-icon">🎁</div><div class="menu-text"><div class="menu-label">Refer &amp; Earn</div><div class="menu-sub">Get ₹50 per referral</div></div><div class="menu-arrow">›</div></div>
+        <div class="menu-item"><div class="menu-icon">💬</div><div class="menu-text"><div class="menu-label">Help &amp; Support</div><div class="menu-sub">Chat, call, FAQ</div></div><div class="menu-arrow">›</div></div>
+        <div class="menu-item" onclick="goTo('login')"><div class="menu-icon">🚪</div><div class="menu-text"><div class="menu-label" style="color:var(--red);">Sign Out</div></div></div>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="goTo('home')"><div class="nav-icon">🏠</div><div class="nav-label">Home</div></div>
+      <div class="nav-item" onclick="goTo('compare')"><div class="nav-icon">🔀</div><div class="nav-label">Rides</div></div>
+      <div class="nav-item" onclick="goTo('activity')"><div class="nav-icon">📋</div><div class="nav-label">Activity</div></div>
+      <div class="nav-item active" onclick="goTo('account')"><div class="nav-icon">👤</div><div class="nav-label">Account</div><div class="nav-dot"></div></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 12 — COMMUTE ALERTS (FIXED) -->
+  <div class="screen" id="commute">
+    <div class="screen-header">
+      <div class="header-back" onclick="goTo('account')">←</div>
+      <div class="screen-header-title">Commute Alerts</div>
+    </div>
+    <div class="commute-scroll">
+      <div class="alert-card anim-fade-up">
+        <div class="alert-label">Daily Class Alert · Active</div>
+        <div class="alert-time">11:32</div>
+        <div style="font-size:12px;color:var(--white);margin-top:4px;font-weight:500;">Leave by this time</div>
+        <div class="alert-route">Thane Station → Kurla Station · Arrive by 12:00 PM</div>
+      </div>
+      <div class="commute-widget anim-fade-up delay-1" style="margin-bottom:16px;">
+        <div class="commute-top">
+          <div><div class="commute-label">🔔 Today's Alert</div><div class="commute-class">Leave in 28 minutes</div></div>
+          <div class="traffic-dot"></div>
+        </div>
+        <div style="font-size:13px;color:var(--muted);font-weight:300;margin-top:8px;">Traffic: Moderate · Best option: Rapido ₹580</div>
+      </div>
+      <div class="traffic-heatmap anim-fade-up delay-2">
+        <div class="heatmap-label">Traffic Forecast Today</div>
+        <div class="heatmap-bars" id="heatmap"></div>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--muted);"><span>7AM</span><span>9AM</span><span>11AM</span><span>1PM</span><span>3PM</span><span>5PM</span><span>7PM</span></div>
+      </div>
+      <div class="section-label anim-fade-up delay-3" style="margin-top:16px;">My Alerts</div>
+      <div class="glass-card anim-fade-up delay-3" style="border-radius:14px;overflow:hidden;margin-bottom:10px;">
+        <div style="padding:16px;display:flex;align-items:center;gap:12px;">
+          <div style="font-size:24px;">🎓</div>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;color:var(--white);">Thane → Kurla</div><div style="font-size:12px;color:var(--muted);margin-top:2px;font-weight:300;">Weekdays · Arrive by 12:00 PM</div></div>
+          <div class="toggle-switch on" onclick="toggleSwitch(this)" style="flex-shrink:0;"><div class="toggle-knob"></div></div>
+        </div>
+      </div>
+      <button class="glass-btn anim-fade-up delay-4" style="width:100%;height:52px;font-size:14px;border-radius:14px;border-style:dashed;margin-top:8px;">+ Add New Alert</button>
+      <div class="glass-card anim-fade-up delay-5" style="padding:16px;border-radius:14px;margin-top:16px;">
+        <div class="section-label" style="margin-bottom:12px;">How It Works</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.7;font-weight:300;">VELO monitors live traffic, cab availability &amp; surge pricing to calculate the perfect departure time. You'll get notified 15 min before you need to leave — so you're never late.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const SCREENS = ['splash','login','home','compare','ridedetail','booking','payment','confirm','tracking','activity','account','commute'];
+let currentIdx = 0;
+
+function goTo(id) {
+  const screens = document.querySelectorAll('.screen');
+  screens.forEach(s => { s.classList.remove('active'); s.style.animation = ''; });
+  const target = document.getElementById(id);
+  if (target) {
+    target.classList.add('active');
+    target.style.animation = 'slide-in-right 0.3s ease';
+    currentIdx = SCREENS.indexOf(id);
+    updateNavDots();
+    target.querySelectorAll('[class*="anim-fade"]').forEach(el => {
+      el.style.animation = 'none';
+      el.offsetHeight;
+      el.style.animation = '';
+    });
+  }
+}
+
+function filterRides(el) {
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function toggleSwitch(sw) { sw.classList.toggle('on'); }
+
+function selectPay(el) {
+  document.querySelectorAll('.payment-method').forEach(m => {
+    m.classList.remove('selected');
+    const chk = m.querySelector('.pay-check');
+    if (chk) chk.remove();
+  });
+  el.classList.add('selected');
+  const check = document.createElement('div');
+  check.className = 'pay-check';
+  check.textContent = '✓';
+  el.appendChild(check);
+}
+
+function buildNavDots() {
+  const ctrl = document.getElementById('navControls');
+  ctrl.innerHTML = '';
+  SCREENS.forEach((id, i) => {
+    const d = document.createElement('div');
+    d.className = 'nav-dot-ctrl' + (i === currentIdx ? ' current' : '');
+    d.onclick = () => goTo(id);
+    d.title = id;
+    ctrl.appendChild(d);
+  });
+}
+
+function updateNavDots() {
+  const dots = document.querySelectorAll('.nav-dot-ctrl');
+  dots.forEach((d, i) => { d.classList.toggle('current', i === currentIdx); });
+}
+
+function buildHeatmap() {
+  const bars = [30, 75, 85, 55, 40, 80, 65];
+  const colors = ['#00E396','#FF4757','#FF4757','#FFB800','#00E396','#FF4757','#FFB800'];
+  const container = document.getElementById('heatmap');
+  if (!container) return;
+  bars.forEach((h, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'heatmap-bar';
+    bar.style.height = h + '%';
+    bar.style.background = colors[i];
+    bar.style.opacity = '0.7';
+    bar.style.borderRadius = '3px 3px 0 0';
+    container.appendChild(bar);
+  });
+}
+
+setTimeout(() => goTo('login'), 2500);
+buildNavDots();
+buildHeatmap();
+</script>
+</body>
+</html>
